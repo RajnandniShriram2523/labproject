@@ -1,6 +1,9 @@
 let admincategorymodel=require("../models/admincategorycurdmodel");
 
 exports.addcategory = ((req, res) => {
+
+
+   console.log("-------------------------------");
   let { category_name } = req.body;
   let promise = admincategorymodel.Addcategory(category_name);
   promise.then((result) => {

@@ -1,17 +1,23 @@
 let express=require("express");
-let adminctrl=require("../controllers/admincontroller.js")
+let adminmodel=require("../controllers/admincontroller");
+let admincategory=require("../controllers/admincategorycontroller");
+
+// let adminbook=require("../controllers/adminbookcontroller");
 
 let router=express.Router();
-router.get("/",adminctrl.homepage);
 
-router.post("/addcategory",adminctrl.addcategory);
-router.get("/viewcategory",adminctrl.viewcategory);
-router.post("/deletecategory",adminctrl.deletecategory);
-router.post("/updatecategory",adminctrl.updatecategory);
-router.post("/finalupdatecategory",adminctrl.FinalUpdatecategory);
-router.post("/searchcategory",adminctrl.serachcategoryByUsingName);
+router.get("/",adminmodel.homepage);
 
 
+router.post("/addcategory",admincategory.addcategory);
+/*
+router.get("/viewcategory",admincategory.viewcategory);
+router.post("/deletecategory",admincategory.deletecategory);
+router.post("/updatecategory",admincategory.updatecategory);
+router.post("/finalupdatecategory",admincategory.FinalUpdatecategory);
+router.post("/searchcategory",admincategory.serachcategoryByUsingName);
+
+*/
 
 
 
