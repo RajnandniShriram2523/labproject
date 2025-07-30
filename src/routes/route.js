@@ -10,5 +10,11 @@ router.post("/deletecategory",adminctrl.deletecategory);
 router.post("/updatecategory",adminctrl.updatecategory);
 router.post("/finalupdatecategory",adminctrl.FinalUpdatecategory);
 router.post("/searchcategory",adminctrl.serachcategoryByUsingName);
+
+
+
+
+
+
 module.exports = router;
 
