@@ -1,9 +1,6 @@
 let admincategorymodel=require("../models/admincategorycurdmodel");
 
 exports.addcategory = ((req, res) => {
-
-
-   console.log("-------------------------------");
   let { category_name } = req.body;
   let promise = admincategorymodel.Addcategory(category_name);
   promise.then((result) => {
@@ -19,17 +16,20 @@ exports.addcategory = ((req, res) => {
 
 
 exports.viewcategory = (req, res) => {
-  const page = parseInt(req.query.page) || 1;    
-  const limit = parseInt(req.query.limit) || 5;  
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 5;
   const offset = (page - 1) * limit;
 
-  adminmodel.viewcategoryWithPagination(limit, offset)
-    .then((result) => {
+  admincategorymodel.viewcategoryWithPagination(limit, offset)
+    .then((data) => {
+      const totalPages = Math.ceil(data.total / limit);
       res.json({
         status: "view",
         currentPage: page,
         perPage: limit,
-        categorylist: result
+        totalItems: data.total,
+        totalPages: totalPages,
+        categorylist: data.categories
       });
     })
     .catch((err) => {
@@ -39,49 +39,84 @@ exports.viewcategory = (req, res) => {
 
 exports.deletecategory = (req, res) => {
   let category_id = parseInt(req.query.category_id);
-  let promise = admincategorymodel.deletebycategoryid(category_id);
-  promise.then((result) => {
-    let p = adminmodel.viewcategory();
-    p.then((result) => {
-      res.json({status:"delete", categorylist: result });
-    });
-    p.catch((err) => {
-      res.json(err);
-    });
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 5;
+  const offset = (page - 1) * limit;
 
-  });
-  promise.catch((err) => {
-  });
-}
+  admincategorymodel.deletebycategoryid(category_id)
+    .then(() => {
+      return admincategorymodel.viewcategoryWithPagination(limit, offset);
+    })
+    .then((data) => {
+      const totalPages = Math.ceil(data.total / limit);
+      res.json({
+        status: "delete",
+        currentPage: page,
+        perPage: limit,
+        totalItems: data.total,
+        totalPages: totalPages,
+        categorylist: data.categories
+      });
+    })
+    .catch((err) => {
+      res.status(500).json({ status: "error", message: err });
+    });
+};
 
 exports.updatecategory = ((req, res) => {
   res.json({status:"update", category_name: req.query.category_name,category_id: req.query.category_id});
 })
 
 exports.FinalUpdatecategory = (req, res) => {
-  let {category_id,category_name} = req.body;
-  let promise = admincategorymodel.finalupdatecategory(category_id,category_name);
-  promise.then((result) => {
-    let p = admincategorymodel.viewcategory();
-    p.then((result) => {
-      res.json({status:"finalupdate",categorylist: result });
+  const { category_id, category_name } = req.body;
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 5;
+  const offset = (page - 1) * limit;
+
+  if (!category_id || !category_name) {
+    return res.status(400).json({ status: "error", message: "Missing category_id or category_name" });
+  }
+
+  admincategorymodel.finalupdatecategory(category_id, category_name)
+    .then(() => admincategorymodel.viewcategoryWithPagination(limit, offset))
+    .then((data) => {
+      res.json({
+        status: "finalupdate",
+        currentPage: page,
+        perPage: limit,
+        totalItems: data.total,
+        totalPages: Math.ceil(data.total / limit),
+        categorylist: data.categories
+      });
+    })
+    .catch((err) => {
+      res.status(500).json({ status: "error", message: err });
     });
-  });
-  promise.catch((err) => {
-    res.send("category not updated");
-  });
-}
+};
 
-exports.serachcategoryByUsingName = ((req, res) => {
-  let category_name = req.query.category_name;
-  let promise = admincategorymodel.searchcategorybyname(category_name);
-  promise.then((result) => {
-    res.json(result);
 
-  })
-  promise.catch((err) => {
-    res.send("Something went to wrong");
-  })
-});
+// Fix typo: serach → search
+exports.serachcategoryByUsingName = (req, res) => {
+  const category_name = req.query.category_name || '';
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 5;
+  const offset = (page - 1) * limit;
 
+  admincategorymodel.searchcategorybyname(category_name, limit, offset)
+    .then((data) => {
+      const totalPages = Math.ceil(data.total / limit);
+      res.json({
+        status: "search",
+        currentPage: page,
+        perPage: limit,
+        totalItems: data.total,
+        totalPages: totalPages,
+        categorylist: data.categories
+      });
+    })
+    .catch((err) => {
+      console.error("Search error:", err);
+      res.status(500).json({ status: "error", message: err.message || err });
+    });
+};
 
