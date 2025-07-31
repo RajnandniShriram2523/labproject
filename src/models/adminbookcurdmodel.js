@@ -15,9 +15,21 @@ exports.Addcategory = (book_title,book_author,book_price,book_publish,category_i
     });
 };
 
-exports.viewbookWithPagination = (limit, offset) => {
+exports.viewbookWithPagination = ( limit, offset) => {
   return new Promise((resolve, reject) => {
-    db.query("SELECT * FROM book LIMIT ? OFFSET ?", [limit, offset], (err, result) => {
+    const sql = `
+      SELECT 
+        b.book_id, b.book_title, b.book_author, b.book_price, 
+        b.book_publish, c.category_name, b.status 
+      FROM 
+        book b 
+      INNER JOIN 
+        category c ON b.category_id = c.category_id 
+      
+        
+      LIMIT ? OFFSET ?`;
+
+    db.query(sql, [ limit, offset], (err, result) => {
       if (err) {
         reject(err);
       } else {
@@ -26,6 +38,8 @@ exports.viewbookWithPagination = (limit, offset) => {
     });
   });
 };
+
+
 
 
 exports.deletebybookid = (book_id, page = 1) => {

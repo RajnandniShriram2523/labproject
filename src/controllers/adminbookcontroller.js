@@ -20,7 +20,13 @@ exports.viewallbooks = (req, res) => {
   const limit = parseInt(req.query.limit) || 5;  
   const offset = (page - 1) * limit;
 
-  adminbookmodel.viewbookWithPagination(limit, offset)
+  // const category_id = req.query.category_id; // ✅ Get category_id from query
+
+  // if (!category_id) {
+  //   return res.status(400).json({ status: "error", message: "category_id is required" });
+  // }
+
+  adminbookmodel.viewbookWithPagination( limit, offset)
     .then((result) => {
       res.json({
         status: "view",

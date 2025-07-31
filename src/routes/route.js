@@ -7,8 +7,11 @@ let adminbook=require("../controllers/adminbookcontroller");
 let router=express.Router();
 //login page
 router.get("/",adminmodel.homepage);
-router.post("/loginadmin",adminmodel.adminlogin);
+router.post("/adduser",usermodel.adduser);
 router.post("/loginuser",usermodel.userlogin);
+
+//admin
+router.post("/loginadmin",adminmodel.adminlogin);
 
 
 //category
@@ -27,6 +30,7 @@ router.get("/deletebooks",adminbook.deletebook);
 router.post("/updatebook",adminbook.updatebook);
 router.post("/Finalupdatebook",adminbook.finalupdatebook);
 router.post("/searchbook",adminbook.searchbookByUsingName);
+
 
 
 
