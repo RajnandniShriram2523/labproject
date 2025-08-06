@@ -2,8 +2,8 @@ let adminbookmodel=require("../models/adminbookcurdmodel");
 
 exports.addnewbook = ((req, res) => {
 
-  let { book_title,book_author,book_price,book_publish,category_id,status } = req.body;
-  let promise = adminbookmodel.Addcategory(book_title,book_author,book_price,book_publish,category_id,status);
+  let { book_title,book_author,book_price,book_published_date,isbn_code,category_id,status } = req.body;
+  let promise = adminbookmodel.Addbook(book_title,book_author,book_price,book_published_date,isbn_code,category_id,status);
   promise.then((result) => {
     console.log(result);
     
@@ -68,7 +68,8 @@ exports.updatebook = (req, res) => {
     book_title: req.query.book_title,
     book_author: req.query.book_author,
     book_price: req.query.book_price,
-    book_publish: req.query.book_publish,
+    book_published_date: req.query.book_published_date,
+    isbn_code: req.query. isbn_code,
     category_id: req.query.category_id,
     status: req.query.status
   });
@@ -81,7 +82,8 @@ exports.finalupdatebook = (req, res) => {
     book_title,
     book_author,
     book_price,
-    book_publish,
+  book_published_date,
+    isbn_code,
     category_id,
     status
   } = req.body;
@@ -103,7 +105,8 @@ exports.finalupdatebook = (req, res) => {
     book_title,
     book_author,
     book_price,
-    book_publish,
+    book_published_date,
+    isbn_code,
     category_id,
     status
   )

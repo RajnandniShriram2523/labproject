@@ -3,9 +3,9 @@ let db = require("../../db.js");
 
 
 
-exports.Addcategory = (book_title,book_author,book_price,book_publish,category_id,status) => {
+exports.Addbook = (book_title,book_author,book_price,book_published_date,isbn_code,category_id,status) => {
     return new Promise((resolve, reject) => {
-        db.query("INSERT INTO book VALUES('0',?,?,?,?,?,?)", [book_title,book_author,book_price,book_publish,category_id,status], (err, result) => {
+        db.query("INSERT INTO book VALUES('0',?,?,?,?,?,?,?)", [book_title,book_author,book_price,book_published_date,isbn_code,category_id,status], (err, result) => {
             if (err) {
                 reject("Not saved: " + err);
             } else {
@@ -20,7 +20,7 @@ exports.viewbookWithPagination = ( limit, offset) => {
     const sql = `
       SELECT 
         b.book_id, b.book_title, b.book_author, b.book_price, 
-        b.book_publish, c.category_name, b.status 
+        b.book_published_date,b.isbn_code, c.category_name, b.status 
       FROM 
         book b 
       INNER JOIN 
@@ -71,18 +71,19 @@ exports.deletebybookid = (book_id, page = 1) => {
   });
 };
 
-exports.finalupdatebook = (book_id, book_title, book_author, book_price, book_publish, category_id, status) => {
+exports.finalupdatebook = (book_id, book_title, book_author, book_price,book_published_date,isbn_code, category_id, status) => {
   return new Promise((resolve, reject) => {
     db.query(
       `UPDATE book SET 
         book_title = ?, 
         book_author = ?, 
         book_price = ?, 
-        book_publish = ?, 
+       book_published_date=?,
+       isbn_code=?,
         category_id = ?, 
         status = ?
        WHERE book_id = ?`,
-      [book_title, book_author, book_price, book_publish, category_id, status, book_id],
+      [book_title, book_author, book_price, book_published_date,isbn_code, category_id, status, book_id],
       (err, result) => {
         if (err) reject(err);
         else resolve(result);

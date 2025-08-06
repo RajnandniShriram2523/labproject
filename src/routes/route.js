@@ -1,13 +1,14 @@
 let express=require("express");
 let adminmodel=require("../controllers/admincontroller");
-let usermodel=require("../controllers/usercontroller");
+let usermodel=require("../controllers/adminusercontroller");
 let admincategory=require("../controllers/admincategorycontroller");
 let adminbook=require("../controllers/adminbookcontroller");
+let issuedbook=require("../controllers/adminissuedbookcontroller");
 
 let router=express.Router();
 //login page
 router.get("/",adminmodel.homepage);
-router.post("/adduser",usermodel.adduser);
+router.post("/adduser",usermodel.Adduser);
 router.post("/loginuser",usermodel.userlogin);
 
 //admin
@@ -30,6 +31,16 @@ router.get("/deletebooks",adminbook.deletebook);
 router.post("/updatebook",adminbook.updatebook);
 router.post("/Finalupdatebook",adminbook.finalupdatebook);
 router.post("/searchbook",adminbook.searchbookByUsingName);
+
+
+// issued book
+router.post("/addissuedbook",issuedbook.addissueBook);
+router.get("/viewissuedbooksByUser", issuedbook.viewissuedbooksByUser);
+router.get("/viewissuedbooksByuseremail",issuedbook.viewissuedbooksByuseremail);
+
+
+
+
 
 
 
