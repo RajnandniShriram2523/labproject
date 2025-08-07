@@ -19,13 +19,10 @@ exports.viewcategoryWithPagination = (limit, offset) => {
       if (err) {
         return reject(err);
       }
-
-      // Get total number of categories
       db.query("SELECT COUNT(*) AS total FROM category", (countErr, countResult) => {
         if (countErr) {
           return reject(countErr);
         }
-
         resolve({
           categories: result,
           total: countResult[0].total
@@ -43,11 +40,9 @@ exports.deletebycategoryid = (category_id) => {
       if (err) {
         return reject(err);
       }
-
       if (result.affectedRows === 0) {
         return reject("Category not found");
       }
-
       resolve("Success");
     });
   });
@@ -60,14 +55,12 @@ exports.finalupdatecategory = (category_id, category_name) => {
     const sql = "UPDATE category SET category_name = ? WHERE category_id = ?";
     db.query(sql, [category_name, category_id], (err, result) => {
       if (err) {
-        return reject(err); // ❌ Query failed
+        return reject(err); 
       }
-
       if (result.affectedRows === 0) {
-        return reject("Category not found or no change made"); // ❌ No update occurred
+        return reject("Category not found or no change made"); 
       }
-
-      resolve("Success"); // ✅ Updated successfully
+      resolve("Success"); 
     });
   });
 };
@@ -75,19 +68,11 @@ exports.finalupdatecategory = (category_id, category_name) => {
 
 exports.searchcategorybyname = (category_name, limit, offset) => {
   return new Promise((resolve, reject) => {
-    const searchQuery = `%${category_name}%`;
+    const searchQuery = `%${category_name}%`; //using template string
 
-    const dataQuery = `
-      SELECT * FROM category 
-      WHERE category_name LIKE ? 
-      LIMIT ? OFFSET ?
-    `;
+    const dataQuery = `SELECT * FROM category WHERE category_name LIKE ? LIMIT ? OFFSET ?`;
 
-    const countQuery = `
-      SELECT COUNT(*) AS total 
-      FROM category 
-      WHERE category_name LIKE ?
-    `;
+    const countQuery = `SELECT COUNT(*) AS total FROM category WHERE category_name LIKE ?`;
 
     // Get paginated search results
     db.query(dataQuery, [searchQuery, limit, offset], (err, results) => {

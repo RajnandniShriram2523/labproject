@@ -16,6 +16,8 @@ exports.Adduser = (student_name, student_email, student_password, study_year) =>
   });
 };
 
+
+
 exports.userData = (student_email, student_password) => {
   return new Promise((resolve, reject) => {
     db.query("SELECT * FROM student WHERE student_email = ? AND student_password = ? ",[student_email, student_password],(err, results) => {
