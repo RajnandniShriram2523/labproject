@@ -6,7 +6,6 @@ let adminbook=require("../controllers/adminbookcontroller");
 let issuedbook=require("../controllers/adminissuedbookcontroller");
 let userinfo=require("../controllers/usercontroller.js");
 
-
 let router=express.Router();
 
 //login page

@@ -10,10 +10,12 @@ exports.Adduser = (req, res) => {
     .then((result) => {
       console.log("✅ User added:", result);
       res.json({ status: "add", msg: result });
+      resolve("Student Added Successfully");
     })
     .catch((err) => {
       console.error("❌ Error adding user:", err);
       res.json({ status: "not add", msg: err });
+       reject("❗ Student Not Added");
     });
 };
 

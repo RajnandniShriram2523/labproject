@@ -6,9 +6,9 @@ exports.addcategory = ((req, res) => {
   promise.then((result) => {
     console.log(result);
     
-    res.json({status:"add", msg: result });
+    res.json({status:"Category Added Successfully", msg: result });
   }).catch((err) => {
-    res.json({status:"not add",  msg: err });
+    res.json({status:"❗ Category not Added",  msg: err });
   });
 
 });

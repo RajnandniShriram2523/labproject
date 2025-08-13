@@ -8,9 +8,9 @@ exports.Adduser = (student_name, student_email, student_password, study_year) =>
 
     db.query(sql, [student_name, student_email, student_password, study_year], (err, result) => {
       if (err) {
-        reject(err);
+        reject("❗ Student Not Added");
       } else {
-        resolve("Student added successfully");
+        resolve("Student Added Successfully");
       }
     });
   });

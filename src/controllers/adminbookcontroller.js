@@ -7,9 +7,9 @@ exports.addnewbook = ((req, res) => {
   promise.then((result) => {
     console.log(result);
     
-    res.json({status:" book added", msg: result });
+    res.json({status:"Book Added Successfully", msg: result });
   }).catch((err) => {
-    res.json({status:"book not added",  msg: err });
+    res.json({status:"❗ Book Not Added ",  msg: err });
   });
 
 });
