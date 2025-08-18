@@ -16,32 +16,27 @@ exports.addnewbook = ((req, res) => {
 
 
 exports.viewallbooks = (req, res) => {
-  const page = parseInt(req.query.page) || 1;    
-  const limit = parseInt(req.query.limit) || 5;  
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 5;
   const offset = (page - 1) * limit;
 
-  // const category_id = req.query.category_id; // ✅ Get category_id from query
-
-  // if (!category_id) {
-  //   return res.status(400).json({ status: "error", message: "category_id is required" });
-  // }
-
-  adminbookmodel.viewbookWithPagination( limit, offset)
-    .then((result) => {
+  adminbookmodel.viewbookWithPagination(limit, offset)
+    .then(({ books, total }) => {
       res.json({
-        status: "view",
+        status: "success",
         currentPage: page,
         perPage: limit,
-        categorylist: result
+        totalPages: Math.ceil(total / limit),
+        BookList: books    // ✅ Correct key
       });
     })
     .catch((err) => {
-      res.status(500).json({ status: "error", message: err });
+      res.status(500).json({ status: "error", message: err.toString() });
     });
 };
 
 
-  
+
 
  exports.deletebook = (req, res) => {
   const book_id = parseInt(req.query.book_id);
@@ -59,6 +54,9 @@ exports.viewallbooks = (req, res) => {
       res.status(500).json({ status: "error", message: err.message });
     });
 };
+
+
+
 
 // Show update form (possibly pre-filled with query data)
 exports.updatebook = (req, res) => {

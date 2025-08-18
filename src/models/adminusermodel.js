@@ -18,6 +18,28 @@ exports.Adduser = (student_name, student_email, student_password, study_year) =>
 
 
 
+
+exports.viewstudentWithPagination = (limit, offset) => {
+  return new Promise((resolve, reject) => {
+    db.query("SELECT * FROM student LIMIT ? OFFSET ?", [limit, offset], (err, result) => {
+      if (err) {
+        return reject(err);
+      }
+      db.query("SELECT COUNT(*) AS total FROM student", (countErr, countResult) => {
+        if (countErr) {
+          return reject(countErr);
+        }
+        resolve({
+          student: result,           // <-- corrected key here
+          total: countResult[0].total
+        });
+      });
+    });
+  });
+};
+
+
+
 exports.userData = (student_email, student_password) => {
   return new Promise((resolve, reject) => {
     db.query("SELECT * FROM student WHERE student_email = ? AND student_password = ? ",[student_email, student_password],(err, results) => {

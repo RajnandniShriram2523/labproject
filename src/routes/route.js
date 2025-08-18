@@ -11,6 +11,7 @@ let router=express.Router();
 //login page
 router.get("/",adminmodel.homepage);
 router.post("/adduser",usermodel.Adduser);
+router.get("/viewstudent",usermodel.viewallstudents );
 router.post("/loginuser",usermodel.userlogin);
 
 //admin

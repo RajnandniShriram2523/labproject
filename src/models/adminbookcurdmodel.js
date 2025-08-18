@@ -15,31 +15,26 @@ exports.Addbook = (book_title,book_author,book_price,book_published_date,isbn_co
     });
 };
 
-exports.viewbookWithPagination = ( limit, offset) => {
+
+exports.viewbookWithPagination = (limit, offset) => {
   return new Promise((resolve, reject) => {
     const sql = `
-      SELECT 
-        b.book_id, b.book_title, b.book_author, b.book_price, 
-        b.book_published_date,b.isbn_code, c.category_name, b.status 
-      FROM 
-        book b 
-      INNER JOIN 
-        category c ON b.category_id = c.category_id 
-      
-        
+      SELECT b.book_id, b.book_title, b.book_author, b.book_price,
+             b.book_published_date, b.isbn_code, c.category_name, b.status
+      FROM book b
+      INNER JOIN category c ON b.category_id = c.category_id
       LIMIT ? OFFSET ?`;
 
-    db.query(sql, [ limit, offset], (err, result) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(result);
-      }
+    db.query(sql, [limit, offset], (err, books) => {
+      if (err) return reject(err);
+
+      db.query("SELECT COUNT(*) AS total FROM book", (countErr, countRes) => {
+        if (countErr) return reject(countErr);
+        resolve({ books, total: countRes[0].total });
+      });
     });
   });
 };
-
-
 
 
 exports.deletebybookid = (book_id, page = 1) => {
