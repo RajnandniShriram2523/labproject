@@ -43,7 +43,7 @@ exports.deletebybookid = (book_id, page = 1) => {
       return reject(new Error("Invalid book_id"));
     }
 
-    const limit = 10;
+    const limit = 6;
     const offset = (page - 1) * limit;
 
     db.query("DELETE FROM book WHERE book_id = ?", [book_id], (err, result) => {
@@ -55,16 +55,28 @@ exports.deletebybookid = (book_id, page = 1) => {
         return reject(new Error("No book found with the given ID."));
       }
 
-      db.query("SELECT * FROM book LIMIT ? OFFSET ?", [limit, offset], (err, rows) => {
+      // After delete, fetch total count for pagination
+      db.query("SELECT COUNT(*) AS count FROM book", (err, countResult) => {
         if (err) {
           return reject(err);
         }
 
-        resolve(rows);
+        const totalCount = countResult[0].count;
+        const totalPages = Math.ceil(totalCount / limit);
+
+        // Then fetch current page data
+        db.query("SELECT * FROM book LIMIT ? OFFSET ?", [limit, offset], (err, rows) => {
+          if (err) {
+            return reject(err);
+          }
+
+          resolve({ rows, totalPages });  // resolve an object with both rows and totalPages
+        });
       });
     });
   });
 };
+
 
 exports.finalupdatebook = (book_id, book_title, book_author, book_price,book_published_date,isbn_code, category_id, status) => {
   return new Promise((resolve, reject) => {
@@ -88,15 +100,30 @@ exports.finalupdatebook = (book_id, book_title, book_author, book_price,book_pub
 };
 
 
+
 exports.searchbookbyname = (book_title, limit, offset) => {
   return new Promise((resolve, reject) => {
     const searchTerm = `%${book_title}%`;
     db.query(
-      "SELECT * FROM book WHERE book_title LIKE ? LIMIT ? OFFSET ?", 
-      [searchTerm, limit, offset], 
+      "SELECT * FROM book WHERE book_title LIKE ? LIMIT ? OFFSET ?",
+      [searchTerm, limit, offset],
       (err, result) => {
         if (err) reject(err);
         else resolve(result);
+      }
+    );
+  });
+};
+
+exports.countBooksByTitle = (book_title) => {
+  return new Promise((resolve, reject) => {
+    const searchTerm = `%${book_title}%`;
+    db.query(
+      "SELECT COUNT(*) AS total FROM book WHERE book_title LIKE ?",
+      [searchTerm],
+      (err, result) => {
+        if (err) reject(err);
+        else resolve(result[0].total);
       }
     );
   });

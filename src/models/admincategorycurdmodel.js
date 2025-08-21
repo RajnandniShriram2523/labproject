@@ -36,12 +36,12 @@ exports.viewcategoryWithPagination = (limit, offset) => {
 
 exports.deletebycategoryid = (category_id) => {
   return new Promise((resolve, reject) => {
-    db.query("DELETE FROM category WHERE category_id = ?", [category_id], (err, result) => {
+    db.query("DELETE FROM category WHERE category_id = ?;", [category_id], (err, result) => {
       if (err) {
-        return reject(err);
+        return reject(err); // SQL error
       }
       if (result.affectedRows === 0) {
-        return reject("Category not found");
+        return reject("Category not found"); // Custom error
       }
       resolve("Success");
     });
@@ -66,19 +66,17 @@ exports.finalupdatecategory = (category_id, category_name) => {
 };
 
 
-exports.searchcategorybyname = (category_name, limit, offset) => {
+// models/admincategorymodel.js
+exports.searchCategoryByName = (category_name, limit, offset) => {
   return new Promise((resolve, reject) => {
-    const searchQuery = `%${category_name}%`; //using template string
+    const searchQuery = `%${category_name}%`;
 
     const dataQuery = `SELECT * FROM category WHERE category_name LIKE ? LIMIT ? OFFSET ?`;
-
     const countQuery = `SELECT COUNT(*) AS total FROM category WHERE category_name LIKE ?`;
 
-    // Get paginated search results
     db.query(dataQuery, [searchQuery, limit, offset], (err, results) => {
       if (err) return reject(err);
 
-      // Get total search result count
       db.query(countQuery, [searchQuery], (err2, countResult) => {
         if (err2) return reject(err2);
 
@@ -90,3 +88,5 @@ exports.searchcategorybyname = (category_name, limit, offset) => {
     });
   });
 };
+
+

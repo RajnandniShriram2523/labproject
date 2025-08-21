@@ -37,8 +37,33 @@ exports.viewcategory = (req, res) => {
     });
 };
 
+// exports.deletecategory = (req, res) => {
+//   let category_id = parseInt(req.params.id);  // ✅ use 'id', same as route param name
+//   const page = parseInt(req.query.page) || 1;
+//   const limit = parseInt(req.query.limit) || 5;
+//   const offset = (page - 1) * limit;
+
+//   admincategorymodel.deletebycategoryid(category_id)
+//     .then(() => {
+//       return admincategorymodel.viewcategoryWithPagination(limit, offset);
+//     })
+//     .then((data) => {
+//       const totalPages = Math.ceil(data.total / limit);
+//       res.json({
+//         status: "delete",
+//         currentPage: page,
+//         perPage: limit,
+//         totalItems: data.total,
+//         totalPages: totalPages,
+//         categorylist: data.categories
+//       });
+//     })
+//     .catch((err) => {
+//       res.status(500).json({ status: "error", message: err });
+//     });
+// };
 exports.deletecategory = (req, res) => {
-  let category_id = parseInt(req.query.category_id);
+  let category_id = parseInt(req.params.id);
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 5;
   const offset = (page - 1) * limit;
@@ -48,6 +73,8 @@ exports.deletecategory = (req, res) => {
       return admincategorymodel.viewcategoryWithPagination(limit, offset);
     })
     .then((data) => {
+
+      console.log(data.categories)
       const totalPages = Math.ceil(data.total / limit);
       res.json({
         status: "delete",
@@ -59,9 +86,11 @@ exports.deletecategory = (req, res) => {
       });
     })
     .catch((err) => {
+      console.error("❌ Delete Category Error:", err);  // ✅ Add this
       res.status(500).json({ status: "error", message: err });
     });
 };
+
 
 exports.updatecategory = ((req, res) => {
   res.json({status:"update", category_name: req.query.category_name,category_id: req.query.category_id});
@@ -96,22 +125,23 @@ exports.FinalUpdatecategory = (req, res) => {
 
 
 // Fix typo: serach → search
-exports.serachcategoryByUsingName = (req, res) => {
-  const category_name = req.query.category_name || '';
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 5;
+// controllers/admincategory.js
+exports.searchCategoryByUsingName = (req, res) => {
+  const category_name = req.query.category_name || ''; // ← now using route param
+  const page = Math.max(parseInt(req.query.page) || 1, 1); // still using query
+  const limit = Math.max(parseInt(req.query.limit) || 5, 1);
   const offset = (page - 1) * limit;
 
-  admincategorymodel.searchcategorybyname(category_name, limit, offset)
+  admincategorymodel.searchCategoryByName(category_name, limit, offset)
     .then((data) => {
       const totalPages = Math.ceil(data.total / limit);
       res.json({
-        status: "search",
+        status: "success",
         currentPage: page,
         perPage: limit,
         totalItems: data.total,
         totalPages: totalPages,
-        categorylist: data.categories
+        categoryList: data.categories
       });
     })
     .catch((err) => {

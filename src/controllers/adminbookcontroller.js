@@ -38,17 +38,17 @@ exports.viewallbooks = (req, res) => {
 
 
 
- exports.deletebook = (req, res) => {
-  const book_id = parseInt(req.query.book_id);
-  const page = parseInt(req.query.page) || 1; // fallback to page 1
+exports.deletebook = (req, res) => {
+  const book_id = parseInt(req.params.book_id);
+  const page = parseInt(req.query.page) || 1;
 
   if (!book_id || isNaN(book_id)) {
     return res.status(400).json({ status: "error", message: "Invalid or missing book_id" });
   }
 
   adminbookmodel.deletebybookid(book_id, page)
-    .then(booklist => {
-      res.json({ status: "delete", booklist });
+    .then(({ rows, totalPages }) => {
+      res.json({ status: "delete", BookList: rows, currentPage: page, totalPages });
     })
     .catch(err => {
       res.status(500).json({ status: "error", message: err.message });
@@ -136,32 +136,31 @@ exports.finalupdatebook = (req, res) => {
   });
 };
 
-exports.searchbookByUsingName = (req, res) => {
-  let book_title = req.query.book_title || '';
-  book_title = book_title.trim().replace(/^["']|["']$/g, '');
+
+exports.searchbookByUsingName = async (req, res) => {
+  let book_title = req.query.book_title || "";
+  book_title = book_title.trim(); // Clean up whitespace
 
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 5;
   const offset = (page - 1) * limit;
 
-  adminbookmodel.searchbookbyname(book_title, limit, offset)
-    .then((result) => {
-      res.json({
-        status: "success",
-        message: result.length 
-          ? `Search results for '${book_title}'` 
-          : `No results found for '${book_title}'`,
-        page,
-        limit,
-        booklist: result
-      });
-    })
-    .catch((err) => {
-      console.error("Search error:", err);
-      res.status(500).json({
-        status: "error",
-        message: "Something went wrong",
-        error: err.message
-      });
+  try {
+    const bookList = await adminbookmodel.searchbookbyname(book_title, limit, offset);
+    const totalCount = await adminbookmodel.countBooksByTitle(book_title);
+    const totalPages = Math.ceil(totalCount / limit);
+
+    res.json({
+      BookList: bookList,
+      currentPage: page,
+      totalPages: totalPages
     });
+  } catch (err) {
+    console.error("Search error:", err);
+    res.status(500).json({
+      status: "error",
+      message: "Something went wrong",
+      error: err.message
+    });
+  }
 };

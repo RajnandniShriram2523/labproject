@@ -11,7 +11,11 @@ let router=express.Router();
 //login page
 router.get("/",adminmodel.homepage);
 router.post("/adduser",usermodel.Adduser);
-router.get("/viewstudent",usermodel.viewallstudents );
+router.get("/viewstudent", usermodel.viewallstudents);
+
+router.get("/deletestudent/:student_id", usermodel.deletestudent);
+router.get("/searchstudent", usermodel.searchstudentByUsingName);
+
 router.post("/loginuser",usermodel.userlogin);
 
 //admin
@@ -21,20 +25,20 @@ router.post("/loginadmin",adminmodel.adminlogin);
 //category
 router.post("/addcategory",admincategory.addcategory);
 router.get("/viewcategory",admincategory.viewcategory);
-router.get("/deletecategory",admincategory.deletecategory);
+router.get("/deletecategory/:id",admincategory.deletecategory);
 router.post("/updatecategory",admincategory.updatecategory);
 router.post("/finalupdatecategory",admincategory.FinalUpdatecategory);
-router.post("/searchcategory",admincategory.serachcategoryByUsingName);
+// Better:
+router.get("/categories/search/", admincategory.searchCategoryByUsingName);
 
 //book
 
 router.post("/addbook",adminbook.addnewbook);
 router.get("/viewallbooks",adminbook.viewallbooks);
-router.get("/deletebooks",adminbook.deletebook);
+router.get("/deletebooks/:book_id", adminbook.deletebook);
 router.post("/updatebook",adminbook.updatebook);
 router.post("/Finalupdatebook",adminbook.finalupdatebook);
-router.post("/searchbook",adminbook.searchbookByUsingName);
-
+router.get("/searchbook", adminbook.searchbookByUsingName);
 
 // issued book
 router.post("/addissuedbook",issuedbook.addissueBook);
