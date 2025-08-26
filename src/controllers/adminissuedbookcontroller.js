@@ -1,5 +1,20 @@
 const issuemodel = require('../models/adminissuedmodel');
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 exports.addissueBook = (req, res) => {
     const { book_id, student_id } = req.body;
     issuemodel.issueBook({ book_id, student_id })

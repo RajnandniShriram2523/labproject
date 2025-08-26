@@ -92,36 +92,41 @@ exports.deletecategory = (req, res) => {
 };
 
 
-exports.updatecategory = ((req, res) => {
-  res.json({status:"update", category_name: req.query.category_name,category_id: req.query.category_id});
-})
 
-exports.FinalUpdatecategory = (req, res) => {
-  const { category_id, category_name } = req.body;
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 5;
-  const offset = (page - 1) * limit;
+// ✅ Get single category by ID
+exports.getCategoryById = (req, res) => {
+  const { id } = req.params;
 
-  if (!category_id || !category_name) {
-    return res.status(400).json({ status: "error", message: "Missing category_id or category_name" });
-  }
-
-  admincategorymodel.finalupdatecategory(category_id, category_name)
-    .then(() => admincategorymodel.viewcategoryWithPagination(limit, offset))
-    .then((data) => {
-      res.json({
-        status: "finalupdate",
-        currentPage: page,
-        perPage: limit,
-        totalItems: data.total,
-        totalPages: Math.ceil(data.total / limit),
-        categorylist: data.categories
-      });
+  admincategorymodel.getCategoryById(id)
+    .then((category) => {
+      if (!category) {
+        return res.status(404).json({ status: "error", message: "Category not found" });
+      }
+      res.json({ status: "success", category });
     })
     .catch((err) => {
       res.status(500).json({ status: "error", message: err });
     });
 };
+
+// ✅ Update category
+exports.updateCategory = (req, res) => {
+  const { id } = req.params;
+  const { category_name } = req.body;
+
+  if (!category_name) {
+    return res.status(400).json({ status: "error", message: "Missing category_name" });
+  }
+
+  admincategorymodel.finalupdatecategory(id, category_name)
+    .then(() => {
+      res.json({ status: "success", message: "Category updated successfully" });
+    })
+    .catch((err) => {
+      res.status(500).json({ status: "error", message: err });
+    });
+};
+
 
 
 // Fix typo: serach → search

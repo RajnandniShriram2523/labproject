@@ -1,4 +1,4 @@
- let usermodel = require("../models/usermodel");
+// let usermodel = require("../models/usermodel");//
 
 exports.userprofile = (req, res) => {
     const student_id = req.query.student_id; // or req.query.id depending on how you're passing it

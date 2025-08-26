@@ -1,29 +1,75 @@
 let usermodel=require("../models/adminusermodel.js");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const userModel = require("../models/userModel");
+const SECRET_KEY = process.env.JWT_SECRET || "Rajnandni@123";
+// ✅ Register
+exports.registerUser = async (req, res) => {
+  try {
+    const { student_name, student_email, student_password, study_year } = req.body;
 
-const userModel = require('../models/usermodel'); // example import path
+    // check existing user
+    const existingUser = await usermodel.findByEmail(student_email);
+    if (existingUser) {
+      return res.status(400).json({ status: "error", msg: "Email already registered" });
+    }
 
-exports.Adduser = (req, res) => {
-  let { student_name, student_email, student_password, study_year } = req.body;
+    // hash password
+    const hashedPassword = await bcrypt.hash(student_password, 10);
 
-  let promise = usermodel.Adduser(student_name, student_email, student_password, study_year);
+    // save user
+    const result = await usermodel.addUser(student_name, student_email, hashedPassword, study_year);
 
-  promise
-    .then((result) => {
-      console.log("✅ User added:", result);
-      res.json({ status: "add", msg: result });
-      // remove resolve here
-    })
-    .catch((err) => {
-      console.error("❌ Error adding user:", err);
-      res.json({ status: "not add", msg: err });
-      // remove reject here
+    res.json({ status: "success", msg: "User registered successfully", data: result });
+  } catch (err) {
+    console.error("❌ Register Error:", err);
+    res.status(500).json({ status: "error", msg: "Something went wrong" });
+  }
+};
+
+// ✅ Login
+exports.loginUser = async (req, res) => {
+  try {
+    const { student_email, student_password } = req.body;
+
+    const user = await usermodel.findByEmail(student_email);
+    if (!user) {
+      return res.status(404).json({ status: "error", msg: "User not found" });
+    }
+
+    const isMatch = await bcrypt.compare(student_password, user.student_password);
+    if (!isMatch) {
+      return res.status(401).json({ status: "error", msg: "Invalid password" });
+    }
+
+    // JWT token
+    const token = jwt.sign(
+      { id: user.student_id, email: user.student_email },
+      process.env.JWT_SECRET || "your_secret_key",
+      { expiresIn: "1h" }
+    );
+
+    res.json({
+      status: "success",
+      msg: "Login successful",
+      token,
+      user: {
+        id: user.student_id,
+        name: user.student_name,
+        email: user.student_email,
+      },
     });
+  } catch (err) {
+    console.error("❌ Login Error:", err);
+    res.status(500).json({ status: "error", msg: "Something went wrong" });
+  }
 };
 
 
 
 
- 
+
+
 
 
 exports.viewallstudents = (req, res) => {

@@ -3,127 +3,219 @@ let db = require("../../db.js");
 
 
 
-exports.Addbook = (book_title,book_author,book_price,book_published_date,isbn_code,category_id,status) => {
-    return new Promise((resolve, reject) => {
-        db.query("INSERT INTO book VALUES('0',?,?,?,?,?,?,?)", [book_title,book_author,book_price,book_published_date,isbn_code,category_id,status], (err, result) => {
-            if (err) {
-                reject("Not saved: " + err);
-            } else {
-                resolve("book saved successfully.");
-            }
-        });
-    });
+// Add a new book
+exports.Addbook = async (
+  book_title,
+  book_author,
+  book_price,
+  book_published_date,
+  isbn_code,
+  category_id,
+  status
+) => {
+  try {
+    const sql = `
+      INSERT INTO book 
+      (book_id, book_title, book_author, book_price, book_published_date, isbn_code, category_id, status) 
+      VALUES (NULL, ?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    const [result] = await db.query(sql, [
+      book_title,
+      book_author,
+      book_price,
+      book_published_date,
+      isbn_code,
+      category_id,
+      status,
+    ]);
+
+    return "Book saved successfully.";
+  } catch (err) {
+    throw new Error("Not saved: " + err.message);
+  }
 };
 
 
-exports.viewbookWithPagination = (limit, offset) => {
-  return new Promise((resolve, reject) => {
+    
+// View books with pagination
+exports.viewbookWithPagination = async (limit, offset) => {
+  try {
     const sql = `
       SELECT b.book_id, b.book_title, b.book_author, b.book_price,
              b.book_published_date, b.isbn_code, c.category_name, b.status
       FROM book b
       INNER JOIN category c ON b.category_id = c.category_id
-      LIMIT ? OFFSET ?`;
+      LIMIT ? OFFSET ?
+    `;
 
-    db.query(sql, [limit, offset], (err, books) => {
-      if (err) return reject(err);
+    // Fetch books with pagination
+    const [books] = await db.query(sql, [limit, offset]);
 
-      db.query("SELECT COUNT(*) AS total FROM book", (countErr, countRes) => {
-        if (countErr) return reject(countErr);
-        resolve({ books, total: countRes[0].total });
-      });
-    });
-  });
+    // Fetch total number of books
+    const [countRes] = await db.query("SELECT COUNT(*) AS total FROM book");
+
+    return {
+      books,
+      total: countRes[0].total
+    };
+  } catch (err) {
+    throw err;
+  }
 };
 
 
-exports.deletebybookid = (book_id, page = 1) => {
-  return new Promise((resolve, reject) => {
-    if (!book_id || isNaN(book_id)) {
-      return reject(new Error("Invalid book_id"));
+
+// Delete a book by ID and return paginated data
+exports.deletebybookid = async (book_id, page = 1) => {
+  if (!book_id || isNaN(book_id)) {
+    throw new Error("Invalid book_id");
+  }
+
+  const limit = 6;
+  const offset = (page - 1) * limit;
+
+  try {
+    // Delete the book
+    const [result] = await db.query("DELETE FROM book WHERE book_id = ?", [book_id]);
+
+    if (result.affectedRows === 0) {
+      throw new Error("No book found with the given ID.");
     }
 
-    const limit = 6;
-    const offset = (page - 1) * limit;
+    // Get total count after deletion
+    const [countResult] = await db.query("SELECT COUNT(*) AS count FROM book");
+    const totalCount = countResult[0].count;
+    const totalPages = Math.ceil(totalCount / limit);
 
-    db.query("DELETE FROM book WHERE book_id = ?", [book_id], (err, result) => {
-      if (err) {
-        return reject(err);
-      }
+    // Fetch current page data
+    const [rows] = await db.query("SELECT * FROM book LIMIT ? OFFSET ?", [limit, offset]);
 
-      if (result.affectedRows === 0) {
-        return reject(new Error("No book found with the given ID."));
-      }
-
-      // After delete, fetch total count for pagination
-      db.query("SELECT COUNT(*) AS count FROM book", (err, countResult) => {
-        if (err) {
-          return reject(err);
-        }
-
-        const totalCount = countResult[0].count;
-        const totalPages = Math.ceil(totalCount / limit);
-
-        // Then fetch current page data
-        db.query("SELECT * FROM book LIMIT ? OFFSET ?", [limit, offset], (err, rows) => {
-          if (err) {
-            return reject(err);
-          }
-
-          resolve({ rows, totalPages });  // resolve an object with both rows and totalPages
-        });
-      });
-    });
-  });
+    return { rows, totalPages };
+  } catch (err) {
+    throw err;
+  }
 };
 
 
-exports.finalupdatebook = (book_id, book_title, book_author, book_price,book_published_date,isbn_code, category_id, status) => {
+
+
+// 🔍 Search books by title
+
+
+// 🔍 Search books by title
+// Search books by title
+
+
+// ✅ Search books by title with pagination
+exports.searchBookByName = async (book_title, limit, offset) => {
+  try {
+    const searchTerm = `%${book_title}%`;
+    const [rows] = await db.query(
+      "SELECT * FROM book WHERE book_title LIKE ? LIMIT ? OFFSET ?",
+      [searchTerm, Number(limit), Number(offset)]
+    );
+    return rows;
+  } catch (err) {
+    throw err;
+  }
+};
+
+// ✅ Count total matching books (for pagination)
+exports.countBooksByTitle = async (book_title) => {
+  try {
+    const searchTerm = `%${book_title}%`;
+    const [rows] = await db.query(
+      "SELECT COUNT(*) AS total FROM book WHERE book_title LIKE ?",
+      [searchTerm]
+    );
+    return rows[0].total;
+  } catch (err) {
+    throw err;
+  }
+};
+
+
+
+
+
+// ✅ Get single book by ID
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ✅ Get book by ID
+
+
+// Get book by ID
+exports.getBookById = (id) => {
   return new Promise((resolve, reject) => {
     db.query(
-      `UPDATE book SET 
-        book_title = ?, 
-        book_author = ?, 
-        book_price = ?, 
-       book_published_date=?,
-       isbn_code=?,
-        category_id = ?, 
+      `SELECT * FROM book WHERE book_id = ?`,
+      [id],
+      (err, rows) => {
+        if (err) return reject(err);
+        resolve(rows[0] || null);
+      }
+    );
+  });
+};
+
+// Update book
+exports.updateBook = (id, payload) => {
+  const { book_title, book_author, book_price, book_published_date, isbn_code, category_id, status } = payload;
+  return new Promise((resolve, reject) => {
+    db.query(
+      `UPDATE book SET
+        book_title = ?,
+        book_author = ?,
+        book_price = ?,
+        book_published_date = ?,
+        isbn_code = ?,
+        category_id = ?,
         status = ?
        WHERE book_id = ?`,
-      [book_title, book_author, book_price, book_published_date,isbn_code, category_id, status, book_id],
+      [book_title, book_author, book_price, book_published_date, isbn_code, category_id, status, id],
       (err, result) => {
-        if (err) reject(err);
-        else resolve(result);
+        if (err) return reject(err);
+        resolve(result); // ❌ Do NOT call res.status here
       }
     );
   });
 };
 
-
-
-exports.searchbookbyname = (book_title, limit, offset) => {
+// Get all categories
+exports.getAllCategories = () => {
   return new Promise((resolve, reject) => {
-    const searchTerm = `%${book_title}%`;
     db.query(
-      "SELECT * FROM book WHERE book_title LIKE ? LIMIT ? OFFSET ?",
-      [searchTerm, limit, offset],
-      (err, result) => {
-        if (err) reject(err);
-        else resolve(result);
-      }
-    );
-  });
-};
-
-exports.countBooksByTitle = (book_title) => {
-  return new Promise((resolve, reject) => {
-    const searchTerm = `%${book_title}%`;
-    db.query(
-      "SELECT COUNT(*) AS total FROM book WHERE book_title LIKE ?",
-      [searchTerm],
-      (err, result) => {
-        if (err) reject(err);
-        else resolve(result[0].total);
+      `SELECT category_id, category_name FROM category ORDER BY category_name ASC`,
+      (err, rows) => {
+        if (err) return reject(err);
+        resolve(rows);
       }
     );
   });

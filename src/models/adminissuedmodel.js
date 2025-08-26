@@ -1,7 +1,6 @@
 let db = require("../../db.js");
 
 
-
 exports.issueBook = (data) => {
     const { book_id, student_id } = data;
 

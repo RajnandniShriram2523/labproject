@@ -1,24 +1,25 @@
 let db=require("../../db.js");
-
-
-
-exports.Adduser = (student_name, student_email, student_password, study_year) => {
-  return new Promise((resolve, reject) => {
+// ✅ Add user to database
+exports.addUser = async (student_name, student_email, student_password, study_year) => {
+  try {
     const sql = `INSERT INTO student (student_name, student_email, student_password, study_year) VALUES (?, ?, ?, ?)`;
-
-    db.query(sql, [student_name, student_email, student_password, study_year], (err, result) => {
-      if (err) {
-        reject("❗ Student Not Added");
-      } else {
-        resolve("Student Added Successfully");
-      }
-    });
-  });
+    const [result] = await db.execute(sql, [student_name, student_email, student_password, study_year]);
+    return result;
+  } catch (err) {
+    throw err;
+  }
 };
 
-
-
-
+// ✅ Find user by email
+exports.findByEmail = async (student_email) => {
+  try {
+    const sql = `SELECT * FROM student WHERE student_email = ?`;
+    const [rows] = await db.execute(sql, [student_email]);
+    return rows[0]; // return single user or undefined
+  } catch (err) {
+    throw err;
+  }
+};
 
 exports.viewallstudents = (req, res) => {
   const page = Math.max(1, parseInt(req.query.page) || 1);

@@ -6,11 +6,23 @@ let adminbook=require("../controllers/adminbookcontroller");
 let issuedbook=require("../controllers/adminissuedbookcontroller");
 let userinfo=require("../controllers/usercontroller.js");
 
+let { verifyToken,  verifyAdmin} = require("../middleware/adminauth.js");
+
+const { verifyToken1 } = require("../middleware/userauth.js");
+
+
+
 let router=express.Router();
+//student login
+router.post("/register",usermodel.registerUser);
+router.post("/login", usermodel.loginUser);
+
+
+
 
 //login page
 router.get("/",adminmodel.homepage);
-router.post("/adduser",usermodel.Adduser);
+// router.post("/adduser",usermodel.Adduser);
 router.get("/viewstudent", usermodel.viewallstudents);
 
 router.get("/deletestudent/:student_id", usermodel.deletestudent);
@@ -19,16 +31,18 @@ router.get("/searchstudent", usermodel.searchstudentByUsingName);
 router.post("/loginuser",usermodel.userlogin);
 
 //admin
-router.post("/loginadmin",adminmodel.adminlogin);
+router.post("/addadmin", adminmodel.saveAdmin);
+router.post("/adminLogin",adminmodel.adminLogin);
 
 
 //category
 router.post("/addcategory",admincategory.addcategory);
 router.get("/viewcategory",admincategory.viewcategory);
 router.get("/deletecategory/:id",admincategory.deletecategory);
-router.post("/updatecategory",admincategory.updatecategory);
-router.post("/finalupdatecategory",admincategory.FinalUpdatecategory);
-// Better:
+router.get("/category/:id", admincategory.getCategoryById);
+
+// Update category
+router.put("/category/:id", admincategory.updateCategory);
 router.get("/categories/search/", admincategory.searchCategoryByUsingName);
 
 //book
@@ -36,9 +50,13 @@ router.get("/categories/search/", admincategory.searchCategoryByUsingName);
 router.post("/addbook",adminbook.addnewbook);
 router.get("/viewallbooks",adminbook.viewallbooks);
 router.get("/deletebooks/:book_id", adminbook.deletebook);
-router.post("/updatebook",adminbook.updatebook);
-router.post("/Finalupdatebook",adminbook.finalupdatebook);
-router.get("/searchbook", adminbook.searchbookByUsingName);
+router.get("/book/:id", adminbook.getBookById);
+router.put("/book/:id", adminbook.updateBook);
+
+// --- CATEGORY ROUTES (for dropdown) ---
+router.get("/categories", adminbook.getAllCategories);
+
+router.get("/searchbook", adminbook.searchBookByUsingName);
 
 // issued book
 router.post("/addissuedbook",issuedbook.addissueBook);
