@@ -1,20 +1,6 @@
 const issuemodel = require('../models/adminissuedmodel');
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 exports.addissueBook = (req, res) => {
     const { book_id, student_id } = req.body;
     issuemodel.issueBook({ book_id, student_id })
@@ -31,16 +17,7 @@ exports.addissueBook = (req, res) => {
 };
 
 
-// exports.viewissuedbooks = (req, res) => {
-//     issuemodel.viewissuedbooks()
-//         .then(issuedBooks => {
-//             res.status(200).json(issuedBooks);
-//         })
-//         .catch(error => {
-//             console.error("Error fetching issued books:", error);
-//             res.status(500).json({ error: "Internal Server Error" });
-//         });
-// };
+
 
 exports.viewissuedbooks = (req, res) => {
     const page = parseInt(req.query.page) || 1;
@@ -70,138 +47,85 @@ exports.viewissuedbooks = (req, res) => {
 
 
 
-// exports.viewissuedbooksissue = (req, res) => {
-//     const status = req.query.status;
-//     issuemodel.viewissuedbooksisssued(status)
-//         .then(issuedBooks => {
-//             res.status(200).json(issuedBooks);
-//         })
-//         .catch(error => {
-//             console.error("Error fetching issued books:", error);
-//             res.status(500).json({ error: "Internal Server Error" });
-//         });
-// };
 
-exports.viewissuedbooksissue = (req, res) => {
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 5;
-  const offset = (page - 1) * limit;
 
-  issuemodel.viewissuedbooksisssued(limit, offset)
-    .then(data => {
-      const totalPages = Math.ceil(data.total / limit);
-      res.status(200).json({
-        status: "success",
-        currentPage: page,
-        perPage: limit,
-        totalItems: data.total,
-        totalPages: totalPages,
-        BookList: data.BookList
-      });
-    })
-    .catch(error => {
-      console.error("Error in controller:", error);
-      res.status(500).json({ status: "error", message: error.message || "Internal Server Error" });
+
+
+
+exports.toggleIssueBookStatus = async (req, res) => {
+  const issue_id = req.params.issue_id;
+
+  try {
+    const newStatus = await issuemodel.toggleIssueBookStatus(issue_id);
+
+    res.status(200).json({
+      status: "success",
+      message: `Book status updated to '${newStatus}'`,
+      newStatus,
     });
+  } catch (err) {
+    console.error("Toggle error:", err);
+    res.status(500).json({
+      status: "error",
+      message: "Failed to update book status",
+      error: err.message,
+    });
+  }
 };
 
 
 
-// exports.viewissuedbooksreturned = (req, res) => {
-//     const status = req.query.status;
-//     issuemodel.viewissuedbooksreturned(status)
-//         .then(issuedBooks => {
-//             res.status(200).json(issuedBooks);
-//         })
-//         .catch(error => {
-//             console.error("Error fetching issued books:", error);
-//             res.status(500).json({ error: "Internal Server Error" });
-//         });
-// };
+
+
+
+
+
+exports.viewissuedbooksissue = async (req, res) => {
+  try {
+    const limit = req.query.limit || 5;
+    const offset = req.query.offset || 0;
+
+    const result = await issuemodel.viewissuedbooksisssued(limit, offset);
+
+    res.status(200).json(result);
+
+  } catch (error) {
+    console.error("Error in getIssuedBooks controller:", error);
+    res.status(500).json({
+      status: "error",
+      message: "Internal server error"
+    });
+  }
+};
+
+
+
+
+
+
+
+
+
+
 
 exports.viewissuedbooksreturned = (req, res) => {
     // Get pagination values from query params with default values
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
 
-    // Basic validation
     if (page < 1 || limit < 1) {
         return res.status(400).json({ error: "Page and limit must be positive integers" });
     }
 
-    // Call the model with pagination
-    issuemodel.viewissuedbooksreturned(page, limit)
+    const offset = (page - 1) * limit;
+
+    // Now pass limit and offset in correct order
+    issuemodel.viewissuedbooksreturned(limit, offset)
         .then(issuedBooks => {
             res.status(200).json({
                 page,
                 limit,
-                data: issuedBooks
-            });
-        })
-        .catch(error => {
-            console.error("Error fetching issued books:", error);
-            res.status(500).json({ error: "Internal Server Error" });
-        });
-};
-
-
-// exports.viewissuedbooksByUser = (req, res) => {
-//     const student_id = req.query.student_id;
-//     if (!student_id) {
-//         return res.status(400).json({ error: "student_id query parameter is required" });
-//     }
-//     issuemodel.viewissuedbooksByUser(student_id)
-//         .then(books => {
-
-//             const grouped = {
-//                 issued: [],
-//                 returned: []
-//             };
-//             books.forEach(book => {
-//                 const status = (book.status || '').toLowerCase();
-//                 if (status === 'issued') {
-//                     grouped.issued.push(book);
-//                 } else if (status === 'returned') {
-//                     grouped.returned.push(book);
-//                 }
-//             });
-//             res.status(200).json(grouped);
-//         })
-//         .catch(error => {
-//             res.status(500).json({ error: "Internal Server Error" });
-//         });
-// };
-
-exports.viewissuedbooksByUser = (req, res) => {
-    const student_id = req.query.student_id;
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-
-    if (!student_id) {
-        return res.status(400).json({ error: "student_id query parameter is required" });
-    }
-
-    issuemodel.viewIssuedBooksByUser(student_id, page, limit)
-        .then(books => {
-            const grouped = {
-                issued: [],
-                returned: []
-            };
-
-            books.forEach(book => {
-                const status = (book.status || '').toLowerCase();
-                if (status === 'issued') {
-                    grouped.issued.push(book);
-                } else if (status === 'returned') {
-                    grouped.returned.push(book);
-                }
-            });
-
-            res.status(200).json({
-                page,
-                limit,
-                totalFetched: books.length,
-                data: grouped
+                ...issuedBooks // unpack pagination details from model
             });
         })
         .catch(error => {
@@ -212,38 +136,108 @@ exports.viewissuedbooksByUser = (req, res) => {
 
 
 
-// exports.viewissuedbooksByuseremail = (req, res) => {
-//     const user_email = req.query.student_email;
-//     issuemodel.viewissuedbooksByUseremail(user_email)
-//         .then(issuedBooks => {
-//             res.status(200).json(issuedBooks);
-//         })
-//         .catch(error => {
-//             console.error("Error fetching issued books:", error);
-//             res.status(500).json({ error: "Internal Server Error" });
-//         });
-// };
 
-exports.viewissuedbooksByuseremail = (req, res) => {
-    const student_email = req.query.student_email;
-    const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 5;
 
-    if (!student_email) {
-        return res.status(400).json({ error: "student_email query parameter is required" });
+exports.viewissuedbooksByuseremail = async (req, res) => {
+  const student_email = req.query.student_email;
+
+  if (!student_email) {
+    return res.status(400).json({ error: "student_email query parameter is required" });
+  }
+
+  try {
+    const result = await issuemodel.viewissuedbooksByUseremail(student_email);
+
+    res.status(200).json({
+      status: result.status,
+      totalItems: result.totalItems,
+      data: result.data,
+    });
+  } catch (error) {
+    console.error("Error fetching issued books:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+
+
+/*search issue book by student_name*/
+
+
+
+exports.searchIssuedBooksByStudentName = async (req, res) => {
+  const studentName = req.query.student_name;
+
+  if (!studentName) {
+    return res.status(400).json({
+      status: "error",
+      message: "Missing student_name in query",
+    });
+  }
+
+  try {
+    const data = await issuemodel.searchIssuedBooksByStudentName(studentName);
+
+    res.status(200).json({
+      status: "success",
+      student_name: studentName,
+      totalItems: data.BookList.length,
+      BookList: data.BookList,
+    });
+  } catch (error) {
+    console.error("Error in searchIssuedBooksByStudentName:", error);
+    res.status(500).json({
+      status: "error",
+      message: "Internal Server Error",
+    });
+  }
+};
+
+
+/*search returned books by student_name*/
+
+
+
+exports.searchReturnedBooksByStudentName = async (req, res) => {
+  try {
+    const studentName = req.query.student_name || req.query.studentName;
+
+    if (!studentName || typeof studentName !== "string" || studentName.trim() === "") {
+      return res.status(400).json({ status: "error", message: "student_name is required." });
     }
 
-    issuemodel.viewissuedbooksByUseremail(student_email, page, limit)
-        .then(result => {
-            res.status(200).json({
-                currentPage: result.currentPage,
-                totalPages: result.totalPages,
-                totalRecords: result.totalRecords,
-                data: result.data
-            });
-        })
-        .catch(error => {
-            console.error("Error fetching issued books:", error);
-            res.status(500).json({ error: "Internal Server Error" });
-        });
+    const result = await issuemodel.searchReturnedBooksByStudentName(studentName);
+    return res.status(200).json(result);
+  } catch (error) {
+    console.error("Controller error - searchReturnedBooksByStudentName:", error);
+    return res.status(500).json({ status: "error", message: "Internal server error" });
+  }
+};
+
+
+
+/*search olny issued books*/
+
+
+exports.searchIssuedBooksOnlyByStudentName = async (req, res) => {
+  try {
+    const studentName = req.query.student_name || req.query.studentName;
+
+    if (!studentName || typeof studentName !== "string" || studentName.trim() === "") {
+      return res.status(400).json({
+        status: "error",
+        message: "student_name is required"
+      });
+    }
+
+    const result = await issuemodel.searchIssuedBooksOnlyByStudentName(studentName);
+
+    res.status(200).json(result);
+  } catch (error) {
+    console.error("Controller error - searchIssuedBooksOnlyByStudentName:", error);
+    res.status(500).json({
+      status: "error",
+      message: "Internal server error"
+    });
+  }
 };

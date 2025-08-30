@@ -1,24 +1,24 @@
-// let usermodel = require("../models/usermodel");//
+// let usermodel = require("../models/usermodel.js");//
 
-exports.userprofile = (req, res) => {
-    const student_id = req.query.student_id; // or req.query.id depending on how you're passing it
+// exports.userprofile = (req, res) => {
+//     const student_id = req.query.student_id; // or req.query.id depending on how you're passing it
 
-    if (!student_id) {
-        return res.status(400).json({ error: "student_id is required" });
-    }
+//     if (!student_id) {
+//         return res.status(400).json({ error: "student_id is required" });
+//     }
 
-    usermodel.userprofile(student_id)
-        .then(userprofile => {
-            if (!userprofile) {
-                return res.status(404).json({ error: "Student not found" });
-            }
-            res.status(200).json(userprofile);
-        })
-        .catch(error => {
-            console.error("Error fetching user profile", error);
-            res.status(500).json({ error: "Internal Server Error" });
-        });
-};
+//     usermodel.userprofile(student_id)
+//         .then(userprofile => {
+//             if (!userprofile) {
+//                 return res.status(404).json({ error: "Student not found" });
+//             }
+//             res.status(200).json(userprofile);
+//         })
+//         .catch(error => {
+//             console.error("Error fetching user profile", error);
+//             res.status(500).json({ error: "Internal Server Error" });
+//         });
+// };
 exports.userviewallbook = (req, res) => {
     usermodel.userviewallbook()
         .then(userbooks => {

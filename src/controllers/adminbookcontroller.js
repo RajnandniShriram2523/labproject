@@ -161,70 +161,52 @@ exports.searchBookByUsingName = async (req, res) => {
 
 
 
-// GET Book by ID
+
+
+// ✅ Get book by ID
 exports.getBookById = async (req, res) => {
   try {
-    const id = parseInt(req.params.id, 10);
-    if (!id) return res.status(400).json({ status: "error", message: "Book ID is required" });
+    const book = await adminbookmodel.getBookById(req.params.id);
+    console.log("Book ID:", req.params.id);
 
-    const book = await adminbookmodel.getBookById(id);
-    if (!book) return res.status(404).json({ status: "error", message: "Book not found" });
+    if (!book) {
+      return res.status(404).json({ status: "error", message: "Book not found" });
+    }
 
-    return res.status(200).json(book);
+    res.json(book);
   } catch (err) {
-    console.error("getBookById error:", err);
-    return res.status(500).json({ status: "error", message: "Failed to fetch book", error: err.message });
+    res.status(500).json({ status: "error", message: err.message });
   }
 };
 
-// PUT /book/:id
+// ✅ Update book
 exports.updateBook = async (req, res) => {
+  const { book_title, book_author, book_price, book_published_date, isbn_code, category_id, status } = req.body;
+  const bookId = req.params.id;
+
   try {
-    const id = parseInt(req.params.id, 10);
-    if (!id) return res.status(400).json({ status: "error", message: "Book ID is required" });
-
-    const {
-      book_title,
-      book_author,
-      book_price,
-      book_published_date,
-      isbn_code,
-      category_id,
-      status
-    } = req.body;
-
-    if (!book_title || !book_author) {
-      return res.status(400).json({ status: "error", message: "Missing required fields" });
-    }
-
-    const result = await adminbookmodel.updateBook(id, {
-      book_title,
-      book_author,
-      book_price,
-      book_published_date,
-      isbn_code,
-      category_id,
-      status
-    });
+    const result = await adminbookmodel.updateBook(bookId, book_title, book_author, book_price, book_published_date, isbn_code, category_id, status);
 
     if (result.affectedRows === 0) {
       return res.status(404).json({ status: "error", message: "Book not found" });
     }
 
-    return res.status(200).json({ status: "success", message: "Book updated successfully" });
+    res.json({
+      status: "success",
+      message: "Book updated successfully",
+      book: { book_id: bookId, book_title, book_author, book_price, book_published_date, isbn_code, category_id, status },
+    });
   } catch (err) {
-    console.error("updateBook error:", err);
-    return res.status(500).json({ status: "error", message: "Book not updated", error: err.message });
+    res.status(500).json({ status: "error", message: err.message });
   }
 };
 
-// GET /categories
-exports.getAllCategories = async (_req, res) => {
+// ✅ Optional: Get all categories (for dropdown in frontend)
+exports.getAllCategories = async (req, res) => {
   try {
-    const rows = await adminbookmodel.getAllCategories();
-    return res.status(200).json({ CategoryList: rows });
+    const categories = await adminbookmodel.getAllCategories();
+    res.json(categories);
   } catch (err) {
-    console.error("getAllCategories error:", err);
-    return res.status(500).json({ status: "error", message: "Failed to fetch categories", error: err.message });
+    res.status(500).json({ status: "error", message: err.message });
   }
 };

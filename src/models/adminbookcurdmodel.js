@@ -168,55 +168,40 @@ exports.countBooksByTitle = async (book_title) => {
 
 
 
+
+
+
 // ✅ Get book by ID
-
-
-// Get book by ID
-exports.getBookById = (id) => {
-  return new Promise((resolve, reject) => {
-    db.query(
-      `SELECT * FROM book WHERE book_id = ?`,
-      [id],
-      (err, rows) => {
-        if (err) return reject(err);
-        resolve(rows[0] || null);
-      }
-    );
-  });
+exports.getBookById = async (bookId) => {
+  const [rows] = await db.query(
+    `SELECT b.*, c.category_name 
+     FROM book b 
+     LEFT JOIN category c ON b.category_id = c.category_id 
+     WHERE b.book_id = ?`,
+    [bookId]
+  );
+  return rows[0]; // return single book
 };
 
-// Update book
-exports.updateBook = (id, payload) => {
-  const { book_title, book_author, book_price, book_published_date, isbn_code, category_id, status } = payload;
-  return new Promise((resolve, reject) => {
-    db.query(
-      `UPDATE book SET
-        book_title = ?,
-        book_author = ?,
-        book_price = ?,
-        book_published_date = ?,
-        isbn_code = ?,
-        category_id = ?,
-        status = ?
-       WHERE book_id = ?`,
-      [book_title, book_author, book_price, book_published_date, isbn_code, category_id, status, id],
-      (err, result) => {
-        if (err) return reject(err);
-        resolve(result); // ❌ Do NOT call res.status here
-      }
-    );
-  });
+// ✅ Update book
+exports.updateBook = async (bookId, book_title, book_author, book_price, book_published_date, isbn_code, category_id, status) => {
+  const [result] = await db.query(
+    `UPDATE book SET 
+      book_title = ?, 
+      book_author = ?, 
+      book_price = ?, 
+      book_published_date = ?, 
+      isbn_code = ?, 
+      category_id = ?, 
+      status = ?
+     WHERE book_id = ?`,
+    [book_title, book_author, book_price, book_published_date, isbn_code, category_id, status, bookId]
+  );
+  return result;
 };
 
-// Get all categories
-exports.getAllCategories = () => {
-  return new Promise((resolve, reject) => {
-    db.query(
-      `SELECT category_id, category_name FROM category ORDER BY category_name ASC`,
-      (err, rows) => {
-        if (err) return reject(err);
-        resolve(rows);
-      }
-    );
-  });
+// ✅ Get all categories (for dropdown)
+exports.getAllCategories = async () => {
+  const [rows] = await db.query(`SELECT * FROM category`);
+  return rows;
 };

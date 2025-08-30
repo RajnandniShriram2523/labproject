@@ -7,68 +7,91 @@ let issuedbook=require("../controllers/adminissuedbookcontroller");
 let userinfo=require("../controllers/usercontroller.js");
 
 let { verifyToken,  verifyAdmin} = require("../middleware/adminauth.js");
-
 const { verifyToken1 } = require("../middleware/userauth.js");
 
 
 
 let router=express.Router();
-//student login
+//Student Register
 router.post("/register",usermodel.registerUser);
+//Student Login
 router.post("/login", usermodel.loginUser);
 
 
 
 
-//login page
+
+//home
 router.get("/",adminmodel.homepage);
-// router.post("/adduser",usermodel.Adduser);
-router.get("/viewstudent", usermodel.viewallstudents);
-
+//view Student List
+router.get("/viewstudent", usermodel.viewAllStudents);
+//Delete Student
 router.get("/deletestudent/:student_id", usermodel.deletestudent);
-router.get("/searchstudent", usermodel.searchstudentByUsingName);
+//Serach Student
+router.get("/searchstudent",usermodel.searchStudents);
+//Update Student
+router.get("/student/:id",usermodel.getStudentById);   
+router.put("/student/:id",usermodel.updateStudent);   
 
-router.post("/loginuser",usermodel.userlogin);
 
-//admin
+
+//Add Admin
 router.post("/addadmin", adminmodel.saveAdmin);
+//Admin Login
 router.post("/adminLogin",adminmodel.adminLogin);
 
 
-//category
+//Add Category
 router.post("/addcategory",admincategory.addcategory);
+//View Category
 router.get("/viewcategory",admincategory.viewcategory);
+//Delete Category
 router.get("/deletecategory/:id",admincategory.deletecategory);
+//Get Data For Updateing Data in Category
 router.get("/category/:id", admincategory.getCategoryById);
-
 // Update category
 router.put("/category/:id", admincategory.updateCategory);
+//Serach Category
 router.get("/categories/search/", admincategory.searchCategoryByUsingName);
 
-//book
 
+//Add Book
 router.post("/addbook",adminbook.addnewbook);
+//View Book
 router.get("/viewallbooks",adminbook.viewallbooks);
+//Delete Book
 router.get("/deletebooks/:book_id", adminbook.deletebook);
+//Get Data For Updateing Data in Book
 router.get("/book/:id", adminbook.getBookById);
-router.put("/book/:id", adminbook.updateBook);
 
-// --- CATEGORY ROUTES (for dropdown) ---
-router.get("/categories", adminbook.getAllCategories);
+// ✅ Update book
+router.put("/book/:id",adminbook.updateBook);
 
+// ✅ Get all categories (for dropdown in update form)
+router.get("/categories",adminbook.getAllCategories);
+//Search Book
 router.get("/searchbook", adminbook.searchBookByUsingName);
 
+
+
+// issued book
 // issued book
 router.post("/addissuedbook",issuedbook.addissueBook);
 router.get("/viewissueallbooks",issuedbook.viewissuedbooks);
 router.get("/viewissueallbooksissued",issuedbook.viewissuedbooksissue);
 router.get("/viewissueallbooksreturned",issuedbook.viewissuedbooksreturned);
-router.get("/viewissuedbooksByUser", issuedbook.viewissuedbooksByUser);
+// router.get("/viewissuedbooksByUser", issuedbook.viewissuedbooksByUser);
 router.get("/viewissuedbooksByuseremail",issuedbook.viewissuedbooksByuseremail);
 
+router.put('/issue-book/:issue_id/toggle-status', issuedbook.toggleIssueBookStatus);
+router.get("/searchissuebookbystudentname", issuedbook.searchIssuedBooksByStudentName);
+router.get("/returned-books/search", issuedbook.searchReturnedBooksByStudentName);
 
-//student info
-router.get("/userprofile",userinfo.userprofile);
+router.get("/search-only-issued-books",issuedbook.searchIssuedBooksOnlyByStudentName);
+
+//Student Profile
+router.get("/profile",verifyToken1,usermodel.getProfile);
+
 router.get("/userviewbook",userinfo.userviewallbook);
 router.get("/viewuserhistory",userinfo.viewuserhistorybyuserid);
 router.get("/viewuserissuedbookbyid",userinfo.viewuserissuedbookbyid);
