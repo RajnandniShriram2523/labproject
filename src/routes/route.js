@@ -92,11 +92,11 @@ router.get("/search-only-issued-books",issuedbook.searchIssuedBooksOnlyByStudent
 //Student Profile
 router.get("/profile",verifyToken1,usermodel.getProfile);
 
-router.get("/userviewbook",userinfo.userviewallbook);
-router.get("/viewuserhistory",userinfo.viewuserhistorybyuserid);
-router.get("/viewuserissuedbookbyid",userinfo.viewuserissuedbookbyid);
-router.get("/viewuserreturnbookbyid",userinfo.viewuserreturnbookbyid);
-
+router.get("/userviewbook", userinfo.userviewallbook);
+// routes/issueBookRoutes.js
+router.get("/myhistory/:studentId", userinfo.getstudenthistory);
+router.get("/students/issued/:studentId", userinfo.getIssuedBooks);
+router.get("/students/returned/:studentId", userinfo.getReturnedBooks);
 
 module.exports = router;
 

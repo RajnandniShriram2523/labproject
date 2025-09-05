@@ -1,7 +1,7 @@
 let usermodel=require("../models/adminusermodel.js");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const userModel = require("../models/userModel");
+const userModel = require("../models/usermodels.js");
 const SECRET_KEY = process.env.JWT_SECRET || "Rajnandni@123";
 // ✅ Register
 exports.registerUser = async (req, res) => {
@@ -20,7 +20,7 @@ exports.registerUser = async (req, res) => {
     // save user
     const result = await usermodel.addUser(student_name, student_email, hashedPassword, study_year);
 
-    res.json({ status: "success", msg: "User registered successfully", data: result });
+    res.json({ status: "success", msg: "Student Registered Successfully", data: result });
   } catch (err) {
     console.error("❌ Register Error:", err);
     res.status(500).json({ status: "error", msg: "Something went wrong" });

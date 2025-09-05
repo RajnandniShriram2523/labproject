@@ -63,7 +63,29 @@ exports.viewbookWithPagination = async (limit, offset) => {
     throw err;
   }
 };
+exports.getAllBooks = async () => {
+  try {
+    const sql = `
+      SELECT b.book_id, b.book_title, b.book_author, b.book_price,
+             b.book_published_date, b.isbn_code, c.category_name, b.status
+      FROM book b
+      INNER JOIN category c ON b.category_id = c.category_id
+    `;
+    const [rows] = await db.query(sql);
+    return rows;
+  } catch (err) {
+    throw err;
+  }
+};
 
+exports.countAllBooks = async () => {
+  try {
+    const [rows] = await db.query("SELECT COUNT(*) AS total FROM book");
+    return rows[0].total;
+  } catch (err) {
+    throw err;
+  }
+};
 
 
 // Delete a book by ID and return paginated data

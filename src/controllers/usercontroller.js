@@ -1,4 +1,4 @@
-// let usermodel = require("../models/usermodel.js");//
+ let usermodels=require("../models/usermodels.js");
 
 // exports.userprofile = (req, res) => {
 //     const student_id = req.query.student_id; // or req.query.id depending on how you're passing it
@@ -19,137 +19,134 @@
 //             res.status(500).json({ error: "Internal Server Error" });
 //         });
 // };
-exports.userviewallbook = (req, res) => {
-    usermodel.userviewallbook()
-        .then(userbooks => {
-            if (!userbooks) {
-                return res.status(404).json({ error: "not show book" });
-            }
-            res.status(200).json(userbooks);
-        })
-        .catch(error => {
-            console.error("Error fetching book", error);
-            res.status(500).json({ error: "Internal Server Error" });
-        });
+
+
+exports.userviewallbook = async (req, res) => {
+  try {
+    const { page = 1, limit = 5, search = "" } = req.query;
+
+    const result = await usermodels.userviewallbook({
+      page: parseInt(page),
+      limit: parseInt(limit),
+      search
+    });
+
+    res.status(200).json(result);
+  } catch (error) {
+    console.error("Error fetching books:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 };
 
 
 
 
-exports.viewuserhistorybyuserid = (req, res) => {
-  const student_id = req.query.student_id;
 
-  if (!student_id || isNaN(student_id)) {
-    return res.status(400).json({ error: "Invalid or missing student_id" });
+
+
+
+exports.getstudenthistory = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    const issues = await usermodels.getByStudentId(studentId);
+
+    res.json(issues);
+  } catch (error) {
+    console.error("Error fetching issue data:", error);
+    res.status(500).json({ message: "Database error" });
   }
-
-  usermodel.viewuserhistorybyuserid(student_id)
-    .then(userinfo => {
-      if (!userinfo || userinfo.length === 0) {
-        return res.status(404).json({ message: "No records found for this student ID" });
-      }
-
-      // Group the issued books and student info
-      const firstRecord = userinfo[0];
-      const studentData = {
-        studentId: firstRecord.student_id,
-        studentName: firstRecord.student_name,
-        studentEmail: firstRecord.student_email,
-        studyYear: firstRecord.study_year,
-        issuedBooks: userinfo
-          .filter(record => record.book_title)  // Filter out if no book issued
-          .map(record => ({
-            categoryName: record.category_name,
-            bookTitle: record.book_title,
-            issueDate: record.issue_date,
-            dueDate: record.due_date,
-            returnDate: record.return_date,
-            status: record.status
-          }))
-      };
-
-      res.status(200).json(studentData);
-    })
-    .catch(error => {
-      console.error("Error fetching student info:", error);
-      res.status(500).json({ error: "Internal Server Error" });
-    });
 };
 
 
-exports.viewuserissuedbookbyid= (req, res) => {
-  const student_id = req.query.student_id;
 
-  if (!student_id || isNaN(student_id)) {
-    return res.status(400).json({ error: "Invalid or missing student_id" });
-  }
 
-  usermodel.viewuserissuedbookbyid(student_id)
-    .then(userinfo => {
-      if (!userinfo || userinfo.length === 0) {
-        return res.status(404).json({ message: "No issued books found for this student ID" });
-      }
 
-      // Group the issued books and student info
-      const firstRecord = userinfo[0];
-      const studentData = {
-        studentId: firstRecord.student_id,
-        studentName: firstRecord.student_name,
-        studentEmail: firstRecord.student_email,
-        studyYear: firstRecord.study_year,
-        issuedBooks: userinfo.map(record => ({
-          categoryName: record.category_name,
-          bookTitle: record.book_title,
-          issueDate: record.issue_date,
-          dueDate: record.due_date,
-          returnDate: record.return_date,
-          status: record.status
-        }))
-      };
 
-      res.status(200).json(studentData);
-    })
-    .catch(error => {
-      console.error("Error fetching issued books:", error);
-      res.status(500).json({ error: "Internal Server Error" });
+
+
+
+
+
+
+
+// controllers/studentController.js
+
+// GET /students/issued/:studentId
+exports.getIssuedBooks = async (req, res) => {
+  try {
+    // ✅ Use JWT middleware (req.user) if available, else fallback to params
+    const studentId = req.user?.id || req.params.studentId;
+
+    if (!studentId) {
+      return res.status(400).json({
+        status: "error",
+        message: "Student ID is required",
+      });
+    }
+
+    const books = await usermodels.onlyviewIssuedBooks(studentId); // call model
+
+    res.json({
+      status: "success",
+      data: books,
     });
+  } catch (err) {
+    console.error("❌ Error fetching issued books:", err);
+    res.status(500).json({
+      status: "error",
+      message: "Failed to fetch issued books",
+    });
+  }
 };
 
 
-exports.viewuserreturnbookbyid= (req, res) => {
-  const student_id = req.query.student_id;
 
-  if (!student_id || isNaN(student_id)) {
-    return res.status(400).json({ error: "Invalid or missing student_id" });
-  }
 
-  usermodel.viewuserreturnbookbyid(student_id)
-    .then(userinfo => {
-      if (!userinfo || userinfo.length === 0) {
-        return res.status(404).json({ message: "No issued books found for this student ID" });
-      }
 
-      // Group the issued books and student info
-      const firstRecord = userinfo[0];
-      const studentData = {
-        studentId: firstRecord.student_id,
-        studentName: firstRecord.student_name,
-        studentEmail: firstRecord.student_email,
-        studyYear: firstRecord.study_year,
-        issuedBooks: userinfo.map(record => ({
-          categoryName: record.category_name,
-          bookTitle: record.book_title,
-          issueDate: record.issue_date,
-          dueDate: record.due_date,
-          returnDate: record.return_date,
-          status: record.status
-        }))
-      };
 
-      res.status(200).json(studentData);
-    })
-    .catch(error => {
-      console.error("Error fetching issued books:", error);
-      res.status(500).json({ error: "Internal Server Error" });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// GET /students/returned/:studentId
+exports.getReturnedBooks = async (req, res) => {
+  try {
+    // ✅ Use JWT middleware (req.user) if available, else fallback to params
+    const studentId = req.user?.id || req.params.studentId;
+
+    if (!studentId) {
+      return res.status(400).json({
+        status: "error",
+        message: "Student ID is required",
+      });
+    }
+
+    const books = await usermodels.onlyviewReturnedBooks(studentId); // call model
+
+    res.json({
+      status: "success",
+      data: books,
     });
+  } catch (err) {
+    console.error("❌ Error fetching returned books:", err);
+    res.status(500).json({
+      status: "error",
+      message: "Failed to fetch returned books",
+    });
+  }
 };
